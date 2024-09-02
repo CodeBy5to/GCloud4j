@@ -50,9 +50,8 @@ public class DriveClient {
                         .setFields("nextPageToken, files(id, name, mimeType, createdTime, size, fileExtension)")
                         .setPageToken(pageToken)
                         .execute();
-                result.getFiles().forEach(file -> {
-                    file.setFileExtension(mimeTypeUtil.getExtensionFromMimeType(file.getMimeType()));
-                });
+                result.getFiles().forEach(file -> file.setFileExtension(mimeTypeUtil
+                        .getExtensionFromMimeType(file.getMimeType())));
                 files.addAll(result.getFiles());
                 pageToken = result.getNextPageToken();
             } while (pageToken != null);
@@ -73,7 +72,7 @@ public class DriveClient {
 
         var inputStream = new ByteArrayInputStream(dataFile);
 
-        File file = null;
+        File file;
         try {
             file = drive.files().create(fileMetadata, new InputStreamContent(mimeType, inputStream))
                     .setFields("id, name, mimeType, createdTime, size, fileExtension")

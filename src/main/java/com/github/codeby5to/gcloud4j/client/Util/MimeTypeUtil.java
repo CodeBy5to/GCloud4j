@@ -22,7 +22,7 @@ public class MimeTypeUtil {
 
     public String getExtensionFromMimeType(String mimeType) {
 
-        MimeType mimeTypeObject = null;
+        MimeType mimeTypeObject;
 
         try {
             mimeTypeObject = config.getMimeRepository().forName(mimeType);
