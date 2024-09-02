@@ -2,6 +2,7 @@ package com.github.codeby5to.gcloud4j.repository;
 
 import com.github.codeby5to.gcloud4j.config.FirestoreDbConfig;
 import com.github.codeby5to.gcloud4j.model.Identifiable;
+import com.github.codeby5to.gcloud4j.repository.annotation.Collection;
 import com.github.codeby5to.gcloud4j.repository.util.MapperUtil;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.CollectionReference;
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
 public class FirestoreRepository<T extends Identifiable> {
     private final Class<T> clazz;
     protected final CollectionReference collection;
+    private String collectionName;
 
     private static final Logger log = Logger.getLogger(FirestoreRepository.class.getName());
 
@@ -29,7 +31,8 @@ public class FirestoreRepository<T extends Identifiable> {
         this.clazz = (Class<T>) ((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0];
         var db = FirestoreDbConfig.getInstance().getDb();
-        this.collection = db.collection(clazz.getSimpleName());
+        setCollection();
+        this.collection = db.collection(collectionName);
     }
 
     public List<T> getAll() {
@@ -94,6 +97,15 @@ public class FirestoreRepository<T extends Identifiable> {
         } catch (Exception e) {
             log.severe(String.format("Error retrieving %s: %s",clazz.getSimpleName(), e.getMessage()));
             return null;
+        }
+    }
+
+    private void setCollection() {
+        Collection annotation = this.getClass().getAnnotation(Collection.class);
+        if (annotation != null) {
+            this.collectionName = annotation.value();
+        } else {
+            this.collectionName = this.clazz.getSimpleName();
         }
     }
 }
