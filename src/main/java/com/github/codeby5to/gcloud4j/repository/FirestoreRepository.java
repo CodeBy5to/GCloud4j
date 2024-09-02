@@ -49,18 +49,22 @@ public class FirestoreRepository<T extends Identifiable> {
         return response;
     }
 
-    public void save(T object) {
+    public T save(T object) {
+        T response = null;
         DocumentReference docRef = collection.document();
         if(object.getDocumentId() != null) docRef = collection.document(object.getDocumentId());
-
         var documentRequest = MapperUtil.convertToMap(object);
-
         try {
-            ApiFuture<WriteResult> future = docRef.set(documentRequest);
-            log.info(String.format("Save %s at %s",clazz.getSimpleName(), future.get().getUpdateTime()));
+            ApiFuture<WriteResult> futureWriteResult = docRef.set(documentRequest);
+            futureWriteResult.get();
+            ApiFuture<DocumentSnapshot> readFuture = docRef.get();
+            DocumentSnapshot documentSnapshot = readFuture.get();
+            response = documentSnapshot.toObject(clazz);
+            if(response != null) response.setDocumentId(docRef.getId());
         } catch (InterruptedException | ExecutionException e) {
             log.severe(String.format("Error on save in %s collection",clazz.getSimpleName()));
         }
+        return response;
     }
 
     public void delete(T object) {
